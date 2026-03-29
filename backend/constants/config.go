@@ -9,13 +9,16 @@ import (
 )
 
 type Config struct {
-	Host       string `env:"DB_HOST"`
-	DBPort     int    `env:"DB_PORT" envDefault:"5432"`
-	DBUser     string `env:"DB_USER"`
-	DBPassword string `env:"DB_PASSWORD"`
-	DBName     string `env:"DB_NAME"`
-	DBSSLMode  string `env:"DB_SSLMODE" envDefault:"disable"`
-	ServerPort int    `env:"SERVER_PORT" envDefault:"8080"`
+	Host               string `env:"DB_HOST"`
+	DBPort             int    `env:"DB_PORT" envDefault:"5432"`
+	DBUser             string `env:"DB_USER"`
+	DBPassword         string `env:"DB_PASSWORD"`
+	DBName             string `env:"DB_NAME"`
+	DBSSLMode          string `env:"DB_SSLMODE" envDefault:"disable"`
+	ServerPort         int    `env:"SERVER_PORT" envDefault:"8080"`
+	JWTSecret          string `env:"JWT_SECRET" envDefault:"chess-dev-secret-change-me"`
+	AccessTokenMinutes int    `env:"ACCESS_TOKEN_MINUTES" envDefault:"15"`
+	RefreshTokenHours  int    `env:"REFRESH_TOKEN_HOURS" envDefault:"168"`
 }
 
 var (

@@ -92,6 +92,25 @@ func (r *PostgresUserRepository) GetUserByID(ctx context.Context, id string) (mo
 	return user, nil
 }
 
+func (r *PostgresUserRepository) GetUserByIdentifier(ctx context.Context, identifier string) (models.User, error) {
+	const query = `
+		SELECT id, username, name, email, password, rating, created_at, last_login
+		FROM users
+		WHERE email = $1 OR username = $1
+		LIMIT 1
+	`
+
+	user, err := scanUser(r.db.QueryRowContext(ctx, query, identifier))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.User{}, ErrUserNotFound
+		}
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
 func (r *PostgresUserRepository) ListUsers(ctx context.Context) ([]models.User, error) {
 	const query = `
 		SELECT id, username, name, email, password, rating, created_at, last_login
