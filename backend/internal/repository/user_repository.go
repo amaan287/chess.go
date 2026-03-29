@@ -8,11 +8,10 @@ import (
 	"errors"
 	"time"
 
+	"github.com/amaan287/chess-backend/constants"
 	"github.com/amaan287/chess-backend/internal/models"
 	"github.com/amaan287/chess-backend/internal/ports"
 )
-
-var ErrUserNotFound = errors.New("user not found")
 
 type PostgresUserRepository struct {
 	db *sql.DB
@@ -26,7 +25,7 @@ func NewPostgresUserRepository(db *sql.DB) *PostgresUserRepository {
 
 func (r *PostgresUserRepository) CreateUser(ctx context.Context, user *models.User) (models.User, error) {
 	if user == nil {
-		return models.User{}, errors.New("user is nil")
+		return models.User{}, constants.ErrNilUser
 	}
 
 	if user.ID == "" {
@@ -84,7 +83,7 @@ func (r *PostgresUserRepository) GetUserByID(ctx context.Context, id string) (mo
 	user, err := scanUser(r.db.QueryRowContext(ctx, query, id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.User{}, ErrUserNotFound
+			return models.User{}, constants.ErrUserNotFound
 		}
 		return models.User{}, err
 	}
@@ -103,7 +102,7 @@ func (r *PostgresUserRepository) GetUserByIdentifier(ctx context.Context, identi
 	user, err := scanUser(r.db.QueryRowContext(ctx, query, identifier))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.User{}, ErrUserNotFound
+			return models.User{}, constants.ErrUserNotFound
 		}
 		return models.User{}, err
 	}
@@ -151,11 +150,11 @@ func (r *PostgresUserRepository) ListUsers(ctx context.Context) ([]models.User, 
 
 func (r *PostgresUserRepository) UpdateUser(ctx context.Context, user *models.User) (models.User, error) {
 	if user == nil {
-		return models.User{}, errors.New("user is nil")
+		return models.User{}, constants.ErrNilUser
 	}
 
 	if user.ID == "" {
-		return models.User{}, errors.New("user id is required")
+		return models.User{}, constants.ErrUserIdRequired
 	}
 
 	if user.LastLogin.IsZero() {
@@ -182,7 +181,7 @@ func (r *PostgresUserRepository) UpdateUser(ctx context.Context, user *models.Us
 	))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.User{}, ErrUserNotFound
+			return models.User{}, constants.ErrUserNotFound
 		}
 		return models.User{}, err
 	}
@@ -204,7 +203,7 @@ func (r *PostgresUserRepository) DeleteUser(ctx context.Context, id string) erro
 	}
 
 	if affectedRows == 0 {
-		return ErrUserNotFound
+		return constants.ErrUserNotFound
 	}
 
 	return nil

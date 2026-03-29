@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"errors"
 	"time"
 
+	"github.com/amaan287/chess-backend/constants"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -11,8 +11,6 @@ const (
 	TokenTypeAccess  = "access"
 	TokenTypeRefresh = "refresh"
 )
-
-var ErrInvalidToken = errors.New("invalid token")
 
 type Manager struct {
 	secret     []byte
@@ -55,25 +53,25 @@ func (m *Manager) GenerateAccessToken(userID string) (string, error) {
 func (m *Manager) ParseToken(tokenString string, expectedType string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, ErrInvalidToken
+			return nil, constants.ErrInvalidToken
 		}
 		return m.secret, nil
 	})
 	if err != nil {
-		return nil, ErrInvalidToken
+		return nil, constants.ErrInvalidToken
 	}
 
 	claims, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {
-		return nil, ErrInvalidToken
+		return nil, constants.ErrInvalidToken
 	}
 
 	if claims.TokenType != expectedType {
-		return nil, ErrInvalidToken
+		return nil, constants.ErrInvalidToken
 	}
 
 	if claims.UserID == "" {
-		return nil, ErrInvalidToken
+		return nil, constants.ErrInvalidToken
 	}
 
 	return claims, nil

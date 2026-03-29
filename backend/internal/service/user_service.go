@@ -5,15 +5,12 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/amaan287/chess-backend/constants"
 	"github.com/amaan287/chess-backend/internal/auth"
 	"github.com/amaan287/chess-backend/internal/models"
 	"github.com/amaan287/chess-backend/internal/ports"
-	"github.com/amaan287/chess-backend/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var ErrInvalidCredentials = errors.New("invalid credentials")
-var ErrInvalidRefreshToken = errors.New("invalid refresh token")
 
 type UserService struct {
 	repo         ports.UserRepository
@@ -29,11 +26,11 @@ func NewUserService(repo ports.UserRepository, tokenManager *auth.Manager) *User
 
 func (s *UserService) CreateUser(ctx context.Context, user *models.User) (models.User, error) {
 	if user == nil {
-		return models.User{}, errors.New("user is nil")
+		return models.User{}, constants.ErrNilUser
 	}
 
 	if strings.TrimSpace(user.Password) == "" {
-		return models.User{}, errors.New("password is required")
+		return models.User{}, constants.ErrNoPassword
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
@@ -57,23 +54,23 @@ func (s *UserService) ListUsers(ctx context.Context) ([]models.User, error) {
 func (s *UserService) Login(ctx context.Context, identifier, password string) (models.User, string, string, error) {
 	identifier = strings.TrimSpace(identifier)
 	if identifier == "" || strings.TrimSpace(password) == "" {
-		return models.User{}, "", "", ErrInvalidCredentials
+		return models.User{}, "", "", constants.ErrInvalidCredentials
 	}
 
 	user, err := s.repo.GetUserByIdentifier(ctx, identifier)
 	if err != nil {
-		if errors.Is(err, repository.ErrUserNotFound) {
-			return models.User{}, "", "", ErrInvalidCredentials
+		if errors.Is(err, constants.ErrUserNotFound) {
+			return models.User{}, "", "", constants.ErrInvalidCredentials
 		}
 		return models.User{}, "", "", err
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return models.User{}, "", "", ErrInvalidCredentials
+		return models.User{}, "", "", constants.ErrInvalidCredentials
 	}
 
 	if s.tokenManager == nil {
-		return models.User{}, "", "", errors.New("token manager is nil")
+		return models.User{}, "", "", constants.ErrNilTokenManager
 	}
 
 	accessToken, refreshToken, err := s.tokenManager.GenerateTokenPair(user.ID)
@@ -86,12 +83,12 @@ func (s *UserService) Login(ctx context.Context, identifier, password string) (m
 
 func (s *UserService) RefreshAccessToken(refreshToken string) (string, error) {
 	if s.tokenManager == nil {
-		return "", errors.New("token manager is nil")
+		return "", constants.ErrNilTokenManager
 	}
 
 	claims, err := s.tokenManager.ParseToken(refreshToken, auth.TokenTypeRefresh)
 	if err != nil {
-		return "", ErrInvalidRefreshToken
+		return "", constants.ErrInvalidRefreshToken
 	}
 
 	accessToken, err := s.tokenManager.GenerateAccessToken(claims.UserID)

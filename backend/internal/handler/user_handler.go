@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/amaan287/chess-backend/constants"
 	"github.com/amaan287/chess-backend/internal/models"
-	"github.com/amaan287/chess-backend/internal/repository"
 	"github.com/amaan287/chess-backend/internal/service"
 	"github.com/gorilla/mux"
 	"github.com/lib/pq"
@@ -118,7 +118,7 @@ func (h *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.service.GetUserByID(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, repository.ErrUserNotFound) {
+		if errors.Is(err, constants.ErrUserNotFound) {
 			writeError(w, http.StatusNotFound, "user not found")
 			return
 		}
@@ -140,7 +140,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, accessToken, refreshToken, err := h.service.Login(r.Context(), req.Identifier, req.Password)
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidCredentials) {
+		if errors.Is(err, constants.ErrInvalidCredentials) {
 			writeError(w, http.StatusUnauthorized, "invalid credentials")
 			return
 		}
@@ -166,7 +166,7 @@ func (h *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, err := h.service.RefreshAccessToken(req.RefreshToken)
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidRefreshToken) {
+		if errors.Is(err, constants.ErrInvalidRefreshToken) {
 			writeError(w, http.StatusUnauthorized, "invalid refresh token")
 			return
 		}
