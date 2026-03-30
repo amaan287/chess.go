@@ -23,7 +23,7 @@ end
 local function drawButton(btn)
 	if btn.hovered then
 		love.graphics.setColor(0.3, 0.6, 1) -- blue when hovered
-	els
+	else
 		love.graphics.setColor(0.2, 0.2, 0.2) -- dark when idle
 	end
 
